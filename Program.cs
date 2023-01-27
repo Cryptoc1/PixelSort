@@ -1,14 +1,15 @@
-﻿using ImageMagick;
-using PixelSort;
+﻿using PixelSort;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
-using( var image = new MagickImage( Paths.Input( "source.jpg" ) ) )
+using( var image = await Image.LoadAsync<Rgba32>( Paths.Input( "source.jpg" ) ) )
 {
-    Console.WriteLine( "loaded, starting sort." );
+    Console.WriteLine( "loaded image, sorting..." );
 
     PixelSorter.Sort( image, PixelSortMode.White );
 
-    string filepath = Paths.Output( "jpg" );
-    await image.WriteAsync( filepath );
+    string filepath = Paths.Output();
+    await image.SaveAsync( filepath );
 
     Console.WriteLine( $"wrote image to '{filepath}'." );
 }

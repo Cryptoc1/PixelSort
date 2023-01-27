@@ -1,28 +1,29 @@
 ﻿using System.Numerics;
-using ImageMagick;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace PixelSort;
 
 public static class PixelSorter
 {
-    public static void Sort( MagickImage image, PixelSortMode mode )
+    public static void Sort( Image<Rgba32> image, PixelSortMode mode )
     {
         ArgumentNullException.ThrowIfNull( image );
 
-        using var context = PixelSortContext.Create( image );
-
-        SortColumns( context, mode );
-        SortRows( context, mode );
+        SortColumns( image, mode );
+        SortRows( image, mode );
     }
 
-    private static void SortColumns( PixelSortContext context, PixelSortMode mode )
+    public static void SortColumns( Image<Rgba32> image, PixelSortMode mode )
     {
-        for( int column = 0; column < context.Width - 1; column++ )
+        ArgumentNullException.ThrowIfNull( image );
+
+        for( int column = 0; column < image.Width - 1; column++ )
         {
             int offset = 0;
-            while( offset < context.Height - 1 )
+            while( offset < image.Height - 1 )
             {
-                var result = mode.ScanColumn( context, column, offset );
+                var result = mode.ScanColumn( image, column, offset );
                 if( result.Start < 0 )
                 {
                     break;
@@ -31,28 +32,28 @@ public static class PixelSorter
                 offset = result.NextOffset;
                 if( result.Length > 0 )
                 {
-                    SortPixels( context, new( column, result.Start ), Vector2.UnitY, result.Length );
+                    SortPixels( image, new( column, result.Start ), Vector2.UnitY, result.Length );
                 }
             }
         }
     }
 
-    private static void SortPixels( PixelSortContext context, Vector2 origin, Vector2 unit, int count )
+    private static void SortPixels( Image<Rgba32> image, Vector2 origin, Vector2 unit, int count )
     {
         int x, y;
-        var colors = new IMagickColor<byte>[ count ];
+        var pixels = new Rgba32[ count ];
 
-        for( int i = 0; i < colors.Length; i++ )
+        for( int i = 0; i < pixels.Length; i++ )
         {
             (x, y) = Coord( origin, unit, i );
-            colors[ i ] = context.Pixels.GetPixelColor( x, y )!;
+            pixels[ i ] = image[ x, y ];
         }
 
-        Array.Sort( colors, ColorComparer.HexValue );
-        for( int i = 0; i < colors.Length; i++ )
+        Array.Sort( pixels, Rgba32PixelComparer.HexValue );
+        for( int i = 0; i < pixels.Length; i++ )
         {
             (x, y) = Coord( origin, unit, i );
-            context.Pixels.SetPixel( x, y, colors[ i ].ToByteArray() );
+            image[ x, y ] = pixels[ i ];
         }
 
         static (int x, int y) Coord( Vector2 origin, Vector2 unit, int scale )
@@ -62,14 +63,16 @@ public static class PixelSorter
         }
     }
 
-    private static void SortRows( PixelSortContext context, PixelSortMode mode )
+    public static void SortRows( Image<Rgba32> image, PixelSortMode mode )
     {
-        for( int row = 0; row < context.Height - 1; row++ )
+        ArgumentNullException.ThrowIfNull( image );
+
+        for( int row = 0; row < image.Height - 1; row++ )
         {
             int offset = 0;
-            while( offset < context.Width - 1 )
+            while( offset < image.Width - 1 )
             {
-                var result = mode.ScanRow( context, row, offset );
+                var result = mode.ScanRow( image, row, offset );
                 if( result.Start < 0 )
                 {
                     break;
@@ -78,7 +81,7 @@ public static class PixelSorter
                 offset = result.NextOffset;
                 if( result.Length > 0 )
                 {
-                    SortPixels( context, new( result.Start, row ), Vector2.UnitX, result.Length );
+                    SortPixels( image, new( result.Start, row ), Vector2.UnitX, result.Length );
                 }
             }
         }
