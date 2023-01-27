@@ -48,7 +48,7 @@ public static class PixelSorter
             colors[ i ] = context.Pixels.GetPixelColor( x, y )!;
         }
 
-        Array.Sort( colors );
+        Array.Sort( colors, ColorComparer.HexValue );
         for( int i = 0; i < colors.Length; i++ )
         {
             (x, y) = Coord( origin, unit, i );

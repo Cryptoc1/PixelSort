@@ -4,7 +4,8 @@ using PixelSort;
 using( var image = new MagickImage( Paths.Input( "source.jpg" ) ) )
 {
     Console.WriteLine( "loaded, starting sort." );
-    PixelSorter.Sort( image, new PixelSortMode.White() );
+
+    PixelSorter.Sort( image, PixelSortMode.White );
 
     string filepath = Paths.Output( "jpg" );
     await image.WriteAsync( filepath );
