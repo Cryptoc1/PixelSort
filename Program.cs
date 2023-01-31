@@ -1,12 +1,15 @@
 ﻿using PixelSort;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 using( var image = await Image.LoadAsync<Rgba32>( Paths.Input( "source.jpg" ) ) )
 {
     Console.WriteLine( "loaded image, sorting..." );
 
-    PixelSorter.Sort( image, PixelSortMode.White );
+    image.Mutate(
+        context => context.Sort( PixelSortMode.White )
+    );
 
     string filepath = Paths.Output();
     await image.SaveAsync( filepath );
