@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing.Processors;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace PixelSort;
 
@@ -22,7 +21,7 @@ public sealed class PixelSortProcessor : IImageProcessor
             throw new InvalidImageContentException( $"{nameof( PixelSortProcessor )} does not support pixel type '{typeof( TPixel ).Name}'." );
         }
 
-        var processor = new PixelSorter(
+        var sorter = new PixelSorter(
             mode,
             configuration,
 
@@ -32,7 +31,7 @@ public sealed class PixelSortProcessor : IImageProcessor
         );
 
         // NOTE: force cast
-        return Unsafe.As<IImageProcessor<TPixel>>( processor );
+        return Unsafe.As<IImageProcessor<TPixel>>( sorter );
     }
 
     private sealed class PixelSorter : ImageProcessor<Rgba32>
