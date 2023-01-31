@@ -6,11 +6,13 @@ namespace PixelSort;
 
 public partial class PixelSortMode
 {
-    public sealed class HexValueThreshold : PixelSortMode
+    public sealed class HexValue : PixelSortMode
     {
+        public override IComparer<Rgba32> Comparer { get; } = Rgba32Comparer.Hex;
+
         private readonly int threshold;
 
-        public HexValueThreshold( int value ) => threshold = value;
+        public HexValue( int value ) => threshold = value;
 
         public override ScanResult Scan( ImageFrame<Rgba32> image, Vector2 axis, Vector2 position )
         {
@@ -21,7 +23,7 @@ public partial class PixelSortMode
             int offset = ( int )Vector2.Dot( position, axis );
             if( offset + 1 >= length )
             {
-                return new( offset, offset );
+                return new( offset, offset + 1 );
             }
 
             int? from = null, to = null;

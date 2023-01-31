@@ -48,10 +48,10 @@ public sealed class PixelSortProcessor : IImageProcessor
             Sort( source, mode, Vector2.UnitY );
         }
 
-        private static void Sort( ImageFrame<Rgba32> image, PixelSortMode mode, Vector2 axis )
+        private static void Sort( ImageFrame<Rgba32> source, PixelSortMode mode, Vector2 axis )
         {
             var inverseAxis = new Vector2( axis.Y, axis.X );
-            var size = new Vector2( image.Width, image.Height );
+            var size = new Vector2( source.Width, source.Height );
 
             int length = ( int )Vector2.Dot( size, axis );
             int inverseLength = ( int )Vector2.Dot( size, inverseAxis );
@@ -61,7 +61,7 @@ public sealed class PixelSortProcessor : IImageProcessor
             {
                 while( Vector2.Dot( position, inverseAxis ) < inverseLength )
                 {
-                    var result = mode.Scan( image, inverseAxis, position );
+                    var result = mode.Scan( source, inverseAxis, position );
                     if( result.Start < 0 )
                     {
                         break;
@@ -70,7 +70,7 @@ public sealed class PixelSortProcessor : IImageProcessor
                     if( result.Length > 0 )
                     {
                         var origin = ( position * axis ) + ( result.Start * inverseAxis );
-                        SortPixels( image, origin, inverseAxis, result.Length );
+                        SortPixels( source, mode, origin, inverseAxis, result.Length );
                     }
 
                     position = ( position * axis ) + ( ( result.NextOffset ?? inverseLength ) * inverseAxis );
@@ -80,7 +80,7 @@ public sealed class PixelSortProcessor : IImageProcessor
             }
         }
 
-        private static void SortPixels( ImageFrame<Rgba32> image, Vector2 origin, Vector2 axis, int count )
+        private static void SortPixels( ImageFrame<Rgba32> source, PixelSortMode mode, Vector2 origin, Vector2 axis, int count )
         {
             int x, y;
             var pixels = new Rgba32[ count ];
@@ -88,14 +88,14 @@ public sealed class PixelSortProcessor : IImageProcessor
             for( int offset = 0; offset < pixels.Length; offset++ )
             {
                 (x, y) = Translate( origin, axis, offset );
-                pixels[ offset ] = image[ x, y ];
+                pixels[ offset ] = source[ x, y ];
             }
 
-            Array.Sort( pixels, Rgba32Comparer.Hex );
+            Array.Sort( pixels, mode.Comparer );
             for( int offset = 0; offset < pixels.Length; offset++ )
             {
                 (x, y) = Translate( origin, axis, offset );
-                image[ x, y ] = pixels[ offset ];
+                source[ x, y ] = pixels[ offset ];
             }
 
             static (int x, int y) Translate( Vector2 origin, Vector2 axis, int distance )

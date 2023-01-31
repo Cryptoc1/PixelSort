@@ -6,7 +6,9 @@ namespace PixelSort;
 
 public abstract partial class PixelSortMode
 {
-    public static readonly PixelSortMode White = new HexValueThreshold( -12345678 );
+    public static readonly PixelSortMode White = new HexValue( -12345678 );
+
+    public abstract IComparer<Rgba32> Comparer { get; }
 
     public abstract ScanResult Scan( ImageFrame<Rgba32> image, Vector2 axis, Vector2 position );
 }
